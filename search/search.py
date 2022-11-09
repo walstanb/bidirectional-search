@@ -388,8 +388,81 @@ def mm(problem, heuristic=nullHeuristic):
                             middle_node = child_state
 
         else:
-            # TODO: The backward Search: @Kavya
-            pass
+            current_state = open_list_backward.pop()
+
+            if current_state not in explored_nodes_backward:
+                children_nodes = problem.getSuccessors(current_state)
+                explored_nodes_backward.append(current_state)
+
+                 for child_node in children_nodes:
+                    child_state, action, step_cost = child_node
+
+                    if child_state not in explored_nodes_backward:
+
+                        if child_state not in parent_info_backward.keys():
+                            parent_info_backward[child_state] = (current_state, action)
+
+                            action_sequence_to_child = getActionSequence(
+                                initial_state=initial_state_backward,
+                                goal_state=child_state,
+                                parent_info=parent_info_backward
+                            )
+
+                            g_val = problem.getCostOfActions(action_sequence_to_child, initial_state_backward)
+                            h_val = heuristic(child_state, initial_state_forward)
+
+                            priority = max(g_val + h_val, 2 * g_val)
+
+                            open_list_backward.push(child_state, priority)
+                        
+                        else:
+                            action_sequence_to_child = getActionSequence(
+                                initial_state=initial_state_backward,
+                                goal_state=child_state,
+                                parent_info=parent_info_backward
+                            )
+
+                            action_sequence_to_current = getActionSequence(
+                                initial_state=initial_state_backward,
+                                goal_state=current_state,
+                                parent_info=parent_info_backward
+                            )
+
+                            old_g_val = problem.getCostOfActions(action_sequence_to_child)
+                            new_g_val = problem.getCostOfActions(action_sequence_to_current) + step_cost
+
+                            h_val = heuristic(child_state, initial_state_forward)
+
+                            if old_g_val > new_g_val:
+                                g_val = new_g_val
+                                open_list_backward.push(child_state, g_val + h_val)
+                                parent_info_backward[child_state] = (current_state, action)
+
+                                priority = max(g_val + h_val, 2 * g_val)
+                                open_list_backward.push(child_state, priority)
+                            
+                    if child_state in explored_nodes_forward:
+
+                        action_sequence_start_to_child = getActionSequence(
+                            initial_state=initial_state_forward,
+                            goal_state=child_state,
+                            parent_info=parent_info_forward
+                        )
+
+                        g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
+
+                        action_sequence_goal_to_child = getActionSequence(
+                            initial_state=initial_state_backward,
+                            goal_state=child_state,
+                            parent_info=parent_info_backward
+                        )
+
+                        g_val_backward = problem.getCostOfActions(action_sequence_goal_to_child, initial_state_backward)
+
+                        U = min(U, g_val_forward + g_val_backward)
+                        if g_val_forward + g_val_backward == U:
+                            middle_node = child_state
+            # pass
     return None
 
 
