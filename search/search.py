@@ -18,6 +18,8 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+import heapq
+from game import Directions
 
 
 class SearchProblem:
@@ -202,6 +204,193 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 fringe.push((nextState, path + [action], g_val + cost), g_val + cost + heuristic(nextState, problem))
 
     return []
+
+
+def manhattanHeuristic(node1, node2):
+    x1, y1 = node1
+    x2, y2 = node2
+    return abs(x1 - x2) + abs(y1 - y2)
+
+
+def mm(problem, heuristic=nullHeuristic):
+
+    def getActionSequence(initial_state, goal_state, parent_info):
+
+        action_sequence = []
+
+        state = goal_state
+
+        while state != initial_state:
+            parent_state, action_parent_child = parent_info[state]
+            action_sequence.append(action_parent_child)
+            state = parent_state
+
+        action_sequence.reverse()
+        return action_sequence
+
+    def getMinimumGAndFValue(open_list, initial_state, goal_state, parent_info):
+
+        f_values = []
+        g_values = []
+
+        for node in open_list:
+            _, _, state = node
+            action_sequence_start_to_current = getActionSequence(initial_state, state, parent_info)
+
+            g_value = problem.getCostOfActions(action_sequence_start_to_current, initial_state)
+            h_value = heuristic(state, goal_state)
+
+            g_values.append(g_value)
+            f_values.append(g_value + h_value)
+
+        return min(g_values), min(f_values)
+
+    def getOppositeAction(current_action):
+        if current_action == Directions.EAST:
+            return Directions.WEST
+        if current_action == Directions.WEST:
+            return Directions.EAST
+        if current_action == Directions.NORTH:
+            return Directions.SOUTH
+        if current_action == Directions.SOUTH:
+            return Directions.NORTH
+        return None
+
+    initial_state_forward = problem.getStartState()
+    initial_state_backward = problem.goal
+
+    open_list_forward = util.PriorityQueue()
+    open_list_backward = util.PriorityQueue()
+
+    open_list_forward.push(initial_state_forward, heuristic(initial_state_forward, initial_state_backward))
+    open_list_backward.push(initial_state_backward, heuristic(initial_state_backward, initial_state_forward))
+
+    explored_nodes_forward = []
+    explored_nodes_backward = []
+
+    parent_info_forward = {}
+    parent_info_backward = {}
+
+    U = float('inf')
+    e = 1.0
+
+    while not (open_list_forward.isEmpty() and open_list_backward.isEmpty()):
+
+        min_g_val_forward, min_f_val_forward = getMinimumGAndFValue(
+            open_list=open_list_forward.heap,
+            initial_state=initial_state_forward,
+            goal_state=initial_state_backward,
+            parent_info=parent_info_forward
+        )
+
+        min_g_val_backward, min_f_val_backward = getMinimumGAndFValue(
+            open_list=open_list_backward.heap,
+            initial_state=initial_state_backward,
+            goal_state=initial_state_forward,
+            parent_info=parent_info_backward
+        )
+
+        min_priority_forward = heapq.nsmallest(1, open_list_forward.heap)[0][0]
+        min_priority_backward = heapq.nsmallest(1, open_list_backward.heap)[0][0]
+
+        C = min(min_priority_forward, min_priority_backward)
+        # middle_node = initial_state_forward
+
+        if U <= max(C, min_f_val_forward, min_f_val_backward, min_g_val_forward + min_g_val_backward + e):
+
+            action_sequence_forward = getActionSequence(initial_state_forward, middle_node, parent_info_forward)
+            action_sequence_backward = getActionSequence(initial_state_backward, middle_node, parent_info_backward)
+
+            inverted_action_sequence_backward = []
+
+            for action in action_sequence_backward:
+                reverse_action = getOppositeAction(action)
+                inverted_action_sequence_backward.append(reverse_action)
+
+            inverted_action_sequence_backward.reverse()
+
+            return action_sequence_forward + inverted_action_sequence_backward
+
+        if C == min_priority_forward:
+            current_state = open_list_forward.pop()
+
+            if current_state not in explored_nodes_forward:
+                children_nodes = problem.getSuccessors(current_state)
+                explored_nodes_forward.append(current_state)
+
+                for child_node in children_nodes:
+                    child_state, action, step_cost = child_node
+
+                    if child_state not in explored_nodes_forward:
+
+                        if child_state not in parent_info_forward.keys():
+                            parent_info_forward[child_state] = (current_state, action)
+
+                            action_sequence_to_child = getActionSequence(
+                                initial_state=initial_state_forward,
+                                goal_state=child_state,
+                                parent_info=parent_info_forward
+                            )
+
+                            g_val = problem.getCostOfActions(action_sequence_to_child, initial_state_forward)
+                            h_val = heuristic(child_state, initial_state_backward)
+
+                            priority = max(g_val + h_val, 2 * g_val)
+
+                            open_list_forward.push(child_state, priority)
+
+                        else:
+                            action_sequence_to_child = getActionSequence(
+                                initial_state=initial_state_forward,
+                                goal_state=child_state,
+                                parent_info=parent_info_forward
+                            )
+
+                            action_sequence_to_current = getActionSequence(
+                                initial_state=initial_state_forward,
+                                goal_state=current_state,
+                                parent_info=parent_info_forward
+                            )
+
+                            old_g_val = problem.getCostOfActions(action_sequence_to_child)
+                            new_g_val = problem.getCostOfActions(action_sequence_to_current) + step_cost
+
+                            h_val = heuristic(child_state, initial_state_backward)
+
+                            if old_g_val > new_g_val:
+                                g_val = new_g_val
+                                open_list_forward.push(child_state, g_val + h_val)
+                                parent_info_forward[child_state] = (current_state, action)
+
+                                priority = max(g_val + h_val, 2 * g_val)
+                                open_list_forward.push(child_state, priority)
+
+                    if child_state in explored_nodes_backward:
+
+                        action_sequence_start_to_child = getActionSequence(
+                            initial_state=initial_state_forward,
+                            goal_state=child_state,
+                            parent_info=parent_info_forward
+                        )
+
+                        g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
+
+                        action_sequence_goal_to_child = getActionSequence(
+                            initial_state=initial_state_backward,
+                            goal_state=child_state,
+                            parent_info=parent_info_backward
+                        )
+
+                        g_val_backward = problem.getCostOfActions(action_sequence_goal_to_child, initial_state_backward)
+
+                        U = min(U, g_val_forward + g_val_backward)
+                        if g_val_forward + g_val_backward == U:
+                            middle_node = child_state
+
+        else:
+            # TODO: The backward Search: @Kavya
+            pass
+    return None
 
 
 # Abbreviations

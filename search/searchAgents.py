@@ -214,14 +214,18 @@ class PositionSearchProblem(search.SearchProblem):
 
         return successors
 
-    def getCostOfActions(self, actions):
+    def getCostOfActions(self, actions, initial_state=None):
         """
         Returns the cost of a particular sequence of actions. If those actions
         include an illegal move, return 999999.
         """
         if actions is None:
             return 999999
-        x, y = self.getStartState()
+
+        if initial_state is None:
+            initial_state = self.getStartState()
+
+        x, y = initial_state
         cost = 0
         for action in actions:
             # Check figure out the next state and see whether its' legal
