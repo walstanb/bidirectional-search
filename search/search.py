@@ -207,45 +207,81 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 
 def manhattanHeuristic(node1, node2):
+    """
+    :return: The manhattan distance between two locations in the 2D space
+    """
     x1, y1 = node1
     x2, y2 = node2
     return abs(x1 - x2) + abs(y1 - y2)
 
 
-def mm(problem, heuristic=nullHeuristic):
-
+def meetInTheMiddle(problem, heuristic=nullHeuristic):
+    """
+    The "Meet in the Middle" heuristic-based Bi-direction search
+    :param problem: The specific problem in the PACMAN domain, e.g., Position Search Problem
+    :param heuristic: The heuristic, e.g., NUll heuristic, Manhattan Distance
+    :return: The optimal action for the agent
+    """
     def getActionSequence(initial_state, goal_state, parent_info):
-
+        """
+        Returns the path from the initial_state to the goal_state using the parent_info of each node
+        :param initial_state: the state to start from
+        :param goal_state: the state to end at
+        :param parent_info: the parent information stored for every node
+        :return:
+        """
         action_sequence = []
 
         state = goal_state
 
+        # Find the path from the goal state to the initial state using the parent information of each node
         while state != initial_state:
             parent_state, action_parent_child = parent_info[state]
             action_sequence.append(action_parent_child)
             state = parent_state
 
+        # Reverse the path from goal to start to get the path from start to goal
         action_sequence.reverse()
+
         return action_sequence
 
     def getMinimumGAndFValue(open_list, initial_state, goal_state, parent_info):
-
+        """
+        Returns the minimum g-value and f-value from the open list, given the initial and the final state
+        :param open_list: the fringe
+        :param initial_state: the initial state of the agent
+        :param goal_state: the final state of the agent
+        :param parent_info: the parent information stored for every node from start to goal
+        :return:
+        """
         f_values = []
         g_values = []
 
+        # For each node in the open list calculate the g_value and the f_value
         for node in open_list:
             _, _, state = node
             action_sequence_start_to_current = getActionSequence(initial_state, state, parent_info)
 
+            # g_value is the cost of the path from the initial state to the current state
             g_value = problem.getCostOfActions(action_sequence_start_to_current, initial_state)
+
+            # h_value is the estimate of the cheapest path from the current state to the goal state
             h_value = heuristic(state, goal_state)
 
             g_values.append(g_value)
+
+            # f_value = g_value + h_value
             f_values.append(g_value + h_value)
 
+        # Return the minimum of all g_values and f_values
         return min(g_values), min(f_values)
 
     def getOppositeAction(current_action):
+        """
+        Returns the opposite direction action given the current direction
+        :param current_action: one of the 4 possible actions: East, West, North, South
+        :return:
+        """
         if current_action == Directions.EAST:
             return Directions.WEST
         if current_action == Directions.WEST:
@@ -256,26 +292,37 @@ def mm(problem, heuristic=nullHeuristic):
             return Directions.NORTH
         return None
 
+    # The initial state in the forward direction is the start state of the problem
     initial_state_forward = problem.getStartState()
+    # The initial state in the backward direction is the goal state of the problem
     initial_state_backward = problem.goal
 
+    # Both the open lists are Priority Queues
     open_list_forward = util.PriorityQueue()
     open_list_backward = util.PriorityQueue()
 
+    # Initially both the open lists contain the corresponding initial state
     open_list_forward.push(initial_state_forward, heuristic(initial_state_forward, initial_state_backward))
     open_list_backward.push(initial_state_backward, heuristic(initial_state_backward, initial_state_forward))
 
+    # A list of explored nodes in both directions
     explored_nodes_forward = []
     explored_nodes_backward = []
 
+    # A dictionary to keep the parent information of each state, in both directions
+    # Key: the child state
+    # Value: the parent state, and the action from the parent state to reach the child state
     parent_info_forward = {}
     parent_info_backward = {}
 
+    # Initialization
     U = float('inf')
     e = 1.0
 
+    # The Meet in the Middle Algorithm
     while not (open_list_forward.isEmpty() and open_list_backward.isEmpty()):
 
+        # Get the min g_value, and f_value in forward direction
         min_g_val_forward, min_f_val_forward = getMinimumGAndFValue(
             open_list=open_list_forward.heap,
             initial_state=initial_state_forward,
@@ -283,6 +330,7 @@ def mm(problem, heuristic=nullHeuristic):
             parent_info=parent_info_forward
         )
 
+        # Get the min g_value, and f_value in backward direction
         min_g_val_backward, min_f_val_backward = getMinimumGAndFValue(
             open_list=open_list_backward.heap,
             initial_state=initial_state_backward,
@@ -290,14 +338,18 @@ def mm(problem, heuristic=nullHeuristic):
             parent_info=parent_info_backward
         )
 
+        # Get the minimum priority from the open lists, in both direction
         min_priority_forward = heapq.nsmallest(1, open_list_forward.heap)[0][0]
         min_priority_backward = heapq.nsmallest(1, open_list_backward.heap)[0][0]
 
+        # The current cost is the minimum of both directional minimum priorities
         C = min(min_priority_forward, min_priority_backward)
-        # middle_node = initial_state_forward
 
+        # The terminating condition: Meet in the middle!
         if U <= max(C, min_f_val_forward, min_f_val_backward, min_g_val_forward + min_g_val_backward + e):
 
+            # Get the action sequence from the start to goal through the middle node
+            # Path(start, goal) = Path(start, middle) + Opposite(Path(goal, middle))
             action_sequence_forward = getActionSequence(initial_state_forward, middle_node, parent_info_forward)
             action_sequence_backward = getActionSequence(initial_state_backward, middle_node, parent_info_backward)
 
@@ -311,18 +363,28 @@ def mm(problem, heuristic=nullHeuristic):
 
             return action_sequence_forward + inverted_action_sequence_backward
 
+        # The forward search
         if C == min_priority_forward:
+
+            # Get the minimum priority state from the open list
             current_state = open_list_forward.pop()
 
+            # Perform actions on the state only if it has not been explored already
             if current_state not in explored_nodes_forward:
+
+                # Get the children states of the current states
                 children_nodes = problem.getSuccessors(current_state)
+                # Mark the current_state as explored to avoid infinite loops
                 explored_nodes_forward.append(current_state)
 
                 for child_node in children_nodes:
                     child_state, action, step_cost = child_node
 
+                    # If the child state has not already been explored, perform the following actions
                     if child_state not in explored_nodes_forward:
 
+                        # If the child node has already been seen through some of its other parent
+                        # compare its already seen path, and the current path, and keep the cheaper one in the open list
                         if child_state not in parent_info_forward.keys():
                             parent_info_forward[child_state] = (current_state, action)
 
@@ -339,6 +401,7 @@ def mm(problem, heuristic=nullHeuristic):
 
                             open_list_forward.push(child_state, priority)
 
+                        # If the child node is seen for the first time, push it to the open list
                         else:
                             action_sequence_to_child = getActionSequence(
                                 initial_state=initial_state_forward,
@@ -365,6 +428,8 @@ def mm(problem, heuristic=nullHeuristic):
                                 priority = max(g_val + h_val, 2 * g_val)
                                 open_list_forward.push(child_state, priority)
 
+                    # If the child state has already been explored in the backward algorithm, it is a potential
+                    # candidate to be the middle node
                     if child_state in explored_nodes_backward:
 
                         action_sequence_start_to_child = getActionSequence(
@@ -394,7 +459,7 @@ def mm(problem, heuristic=nullHeuristic):
                 children_nodes = problem.getSuccessors(current_state)
                 explored_nodes_backward.append(current_state)
 
-                 for child_node in children_nodes:
+                for child_node in children_nodes:
                     child_state, action, step_cost = child_node
 
                     if child_state not in explored_nodes_backward:
@@ -462,7 +527,7 @@ def mm(problem, heuristic=nullHeuristic):
                         U = min(U, g_val_forward + g_val_backward)
                         if g_val_forward + g_val_backward == U:
                             middle_node = child_state
-            # pass
+
     return None
 
 
@@ -471,3 +536,4 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+mm = meetInTheMiddle
