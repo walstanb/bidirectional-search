@@ -451,10 +451,12 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
                         U = min(U, g_val_forward + g_val_backward)
                         if g_val_forward + g_val_backward == U:
                             middle_node = child_state
-
+         # The backward search
         else:
+            # Get the minimum priority state from the open list
             current_state = open_list_backward.pop()
 
+            # Perform actions on the state only if it has not been explored already
             if current_state not in explored_nodes_backward:
                 children_nodes = problem.getSuccessors(current_state)
                 explored_nodes_backward.append(current_state)
@@ -462,11 +464,13 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
                 for child_node in children_nodes:
                     child_state, action, step_cost = child_node
 
+                    #Verify if the child node exists in the explored nodes
                     if child_state not in explored_nodes_backward:
 
                         if child_state not in parent_info_backward.keys():
                             parent_info_backward[child_state] = (current_state, action)
-
+                            
+                            #Get sequence of actions to go from initial state to child node 
                             action_sequence_to_child = getActionSequence(
                                 initial_state=initial_state_backward,
                                 goal_state=child_state,
@@ -479,7 +483,8 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
                             priority = max(g_val + h_val, 2 * g_val)
 
                             open_list_backward.push(child_state, priority)
-                        
+
+                        # If the child node is seen for the first time, push it to the open list
                         else:
                             action_sequence_to_child = getActionSequence(
                                 initial_state=initial_state_backward,
@@ -505,7 +510,9 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
 
                                 priority = max(g_val + h_val, 2 * g_val)
                                 open_list_backward.push(child_state, priority)
-                            
+
+                    # If the child state has already been explored in the forward algorithm, it is a potential
+                    # candidate to be the middle node    
                     if child_state in explored_nodes_forward:
 
                         action_sequence_start_to_child = getActionSequence(
