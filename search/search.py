@@ -629,54 +629,28 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
         
         return actions_                                     #Returning the actions_ list
 
-
-    def min_fValue(allNodes, initialState, parentChildLink, problem, searchDirection):
-        """ This function return the minimum 'f' valuesin a priority queue
-            
-            - allNode is the list of all nodes in the priority queue along with its priority values
-            - initialState has its usual meaning. Note: In forward direction initialState will be true initial state in the search space and in the backward direction, initial state will be the goal state
-            - parentChildLink is a dictionary. For more info on it check the description of parentChildForward and parentChildBackward
-            - searchDirection is the  is the direction of the search
-        """
-
-        allFValues=[]
-        if(searchDirection=='Forward'):
-            for node in allNodes:
-                seqAction=backtrace(parentChildLink, initialState, node[2])
-                Cost_= problem.getCostOfActions(seqAction) + cornersHeuristic(node[2], problem, searchDirection)
-                allFValues.append(Cost_)
-        else:
-            for node in allNodes:
-                seqAction=backtrace(parentChildLink, initialState, node[2])
-                Cost_= problem.getCostOfActionsBackward(seqAction, initialState[0]) + cornersHeuristic (node[2], problem, searchDirection)
-                allFValues.append(Cost_) 
-
-        return(min(allFValues))
-
-
-    def min_gValue(allNodes, initialState, parentChildLink, searchDirection):
-
-        """ This function return the minimum 'g' valuesin a priority queue
-            
-            - allNode is the list of all nodes in the priority queue along with its priority values
-            - initialState has its usual meaning. Note: In forward direction initialState will be true initial state in the search space and in the backward direction, initial state will be the goal state
-            - parentChildLink is a dictionary. For more info on it check the description of parentChildForward and parentChildBackward
-            - searchDirection is the  is the direction of the search
-        """
-        allGValues=[]
+    def get_both(allNodes, initialState, parentChildLink, problem, searchDirection):
+        f_values = []
+        g_values = []
 
         if(searchDirection=='Forward'):
             for node in allNodes:
                 seqAction=backtrace(parentChildLink, initialState, node[2])
-                Cost_= problem.getCostOfActions(seqAction)
-                allGValues.append(Cost_)
-
+                g_value= problem.getCostOfActions(seqAction)
+                h_value = cornersHeuristic(node[2], problem, searchDirection)
+                g_values.append(g_value)
+                f_values.append(g_value + h_value)
         else:
             for node in allNodes:
                 seqAction=backtrace(parentChildLink, initialState, node[2])
-                Cost_= problem.getCostOfActionsBackward(seqAction, initialState[0])
-                allGValues.append(Cost_)
-        return(min(allGValues))
+                g_value = problem.getCostOfActionsBackward(seqAction, initialState[0])
+                h_value = cornersHeuristic (node[2], problem, searchDirection)
+                g_values.append(g_value)
+                f_values.append(g_value + h_value)
+        
+        return min(g_values), min(f_values)
+
+
 
     
     
@@ -745,17 +719,10 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
             return None
 
         else:
-
-            # Getting the minimum 'f' values in each direction
-            fmin_Forward = min_fValue(frontierStatesForward.heap, initialState_Forward, parentChildForward, problem, 'Forward')
-            fmin_Backward = min_fValue(frontierStatesBackward.heap, initialState_Backward, parentChildBackward, problem, 'Backward')
-
-
-
-            # Getting the minimum 'g' values in each direction
-            gmin_Forward = min_gValue(frontierStatesForward.heap, initialState_Forward, parentChildForward, 'Forward')
-            gmin_Backward = min_gValue(frontierStatesBackward.heap, initialState_Backward, parentChildBackward, 'Backward')
-
+            
+            gmin_Forward, fmin_Forward = get_both(frontierStatesForward.heap, initialState_Forward, parentChildForward, problem, 'Forward')
+            gmin_Backward, fmin_Backward = get_both(frontierStatesBackward.heap, initialState_Backward, parentChildBackward, problem, 'Backward')
+            
             # Fetching the highest priority values in each search directions
             minPriorityValueinForwardQueue = heapq.nsmallest(1,frontierStatesForward.heap)[0][0]
             minPriorityValueinBackwardQueue = heapq.nsmallest(1, frontierStatesBackward.heap)[0][0]
