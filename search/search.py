@@ -643,7 +643,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
         else:
             for node in allNodes:
                 seqAction=backtrace(parentChildLink, initialState, node[2])
-                g_value = problem.getCostOfActionsBackward(seqAction, initialState[0])
+                #g_value = problem.getCostOfActionsBackward(seqAction, initialState[0])
+                g_value = problem.getCostOfActions(seqAction, initialState[0])
                 h_value = cornersHeuristic (node[2], problem, searchDirection)
                 g_values.append(g_value)
                 f_values.append(g_value + h_value)
@@ -768,7 +769,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                 if(minValue==minPriorityValueinForwardQueue):
                     parentNodeForward = frontierStatesForward.pop()  #Pop the node which highest priority        
                     if(parentNodeForward not in exploredStatesForward):
-                        newFrontierNodes=problem.getSuccessors(parentNodeForward)  #Get the successor nodes of the node which was just popped 
+                        newFrontierNodes=problem.getSuccessorsNew(parentNodeForward)  #Get the successor nodes of the node which was just popped 
                         exploredStatesForward.append(parentNodeForward)
 
                         for childNodes in newFrontierNodes:
@@ -818,7 +819,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                         
                                 if(childNodes[0] in exploredStatesBackward):
                                     costofStartStatetoNode = problem.getCostOfActions(backtrace(parentChildForward, initialState_Forward, childNodes[0]))
-                                    costofGoalStatetoNode  = problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    #costofGoalStatetoNode  = problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    costofGoalStatetoNode  = problem.getCostOfActions(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
                                     
                                     # Update U 
                                     U = min(U, costofStartStatetoNode+costofGoalStatetoNode)
@@ -830,7 +832,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
 
                     parentNodeBackward = frontierStatesBackward.pop()  #Pop the node which highest priority        
                     if(parentNodeBackward not in exploredStatesBackward):
-                        newFrontierNodes=problem.getSuccessorsBackward(parentNodeBackward) #Get the successor nodes of the node which was just popped
+                        newFrontierNodes=problem.getSuccessorsNew(parentNodeBackward, True) #Get the successor nodes of the node which was just popped
                         exploredStatesBackward.append(parentNodeBackward)
 
                         for childNodes in newFrontierNodes:
@@ -848,10 +850,11 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                     """
                                     seqAction=backtrace(parentChildBackward, initialState_Backward, childNodes[0])
 
-                                    Cost_=problem.getCostOfActionsBackward(seqAction,initialState_Backward[0]) + cornersHeuristic(childNodes[0], problem, 'Backward')
+                                    #Cost_=problem.getCostOfActionsBackward(seqAction,initialState_Backward[0]) + cornersHeuristic(childNodes[0], problem, 'Backward')
+                                    Cost_=problem.getCostOfActions(seqAction,initialState_Backward[0]) + cornersHeuristic(childNodes[0], problem, 'Backward')
 
-                                    priorityValue= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction, initialState_Backward[0]))
-
+                                    #priorityValue= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction, initialState_Backward[0]))
+                                    priorityValue= max(Cost_, 2*problem.getCostOfActions(seqAction, initialState_Backward[0]))
                                    
                                     """Adding the childNode state to the frontier list along with the Cost_ to reach the ChildNode"""
                                     frontierStatesBackward.push(childNodes[0], priorityValue)
@@ -861,10 +864,11 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                     """ If the childNode is already present, we update the child:Parent link only if the current cost is lesser than the past cost"""
 
                                     """Getting the past cost"""
-                                    Past_Cost=problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    #Past_Cost=problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    Past_Cost=problem.getCostOfActions(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
                                     """Getting the current cost"""
-                                    Cost_=problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, parentNodeBackward), initialState_Backward[0])+childNodes[2]
-
+                                   # Cost_=problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, parentNodeBackward), initialState_Backward[0])+childNodes[2]
+                                    Cost_=problem.getCostOfActions(backtrace(parentChildBackward, initialState_Backward, parentNodeBackward), initialState_Backward[0])+childNodes[2]
                                     """Adding the heuristic cost"""
                                     Cost_= Cost_ + cornersHeuristic(childNodes[0], problem, 'Backward')
 
@@ -874,7 +878,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                         """Updating the Child:Parent link in the parentChildBackward linkup"""
                                         parentChildBackward[childNodes[0]]=(parentNodeBackward, childNodes[1])
 
-                                        priorityValue= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction), initialState_Backward[0])
+                                        #priorityValue= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction), initialState_Backward[0])
+                                        priorityValue= max(Cost_, 2*problem.getCostOfActions(seqAction), initialState_Backward[0])
   
                                         frontierStatesBackward.push(childNodes[0], priorityValue)
 
@@ -882,7 +887,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                 if(childNodes[0] in exploredStatesForward):
                                     
                                     costofStartStatetoNode = problem.getCostOfActions(backtrace(parentChildForward, initialState_Forward, childNodes[0]))
-                                    costofGoalStatetoNode  = problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    #costofGoalStatetoNode  = problem.getCostOfActionsBackward(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
+                                    costofGoalStatetoNode  = problem.getCostOfActions(backtrace(parentChildBackward, initialState_Backward, childNodes[0]), initialState_Backward[0])
                                     
                                     # Update U 
 

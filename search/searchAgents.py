@@ -342,8 +342,8 @@ class CornersProblem(search.SearchProblem):
 
         return isGoal   
         util.raiseNotDefined()
-
-    def getSuccessors(self, state):
+    
+    def getSuccessorsNew(self, state, boolFlag = False):
         """
         Returns successor states, the actions they require, and a cost of 1.
          As noted in search.py:
@@ -388,92 +388,31 @@ class CornersProblem(search.SearchProblem):
                         if(counter != cornerIndex+1):
                             nextState.append(state[counter])
                         else:
-                            nextState.append((self.corners[cornerIndex], False))
+                            nextState.append((self.corners[cornerIndex], boolFlag))
                     successors.append((tuple(nextState), action, cost)) 
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
-    def getSuccessorsBackward(self, state):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
-        """
-
-        successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            x,y = state[0]
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitsWall = self.walls[nextx][nexty]
-            if not self.walls[nextx][nexty]:
-                """We first compute the next position of the agent/pacman"""
-                nextAgentPosition = (nextx, nexty)
-                """Then we calculate the cost of the action"""
-                cost = self.costFn(nextAgentPosition)
-                """ If the next position of the agent is not one of the corner positions,
-                    then the nextStates is the just the new agentposition and the old states of the corner positions
-                """
-                if nextAgentPosition not in self.corners:
-                    nextState=[]
-                    nextState.append(nextAgentPosition)
-                    for counter in range(1,5):
-                        nextState.append(state[counter])
-                    successors.append((tuple(nextState), action, cost))
-                
-                    """ 
-                        If the next position of the agent is one of the corner positions,
-                        then the next states is the new position of the agent AND the Updated Status of the corner positions(i.e. if food is there it is Present)
-                    """ 
-                else:
-                    cornerIndex=self.corners.index(nextAgentPosition)
-                    nextState=[]
-                    nextState.append(nextAgentPosition)
-                    for counter in range(1,5):
-                        if(counter != cornerIndex+1):
-                            nextState.append(state[counter])
-                        else:
-                            nextState.append((self.corners[cornerIndex], True))
-                    successors.append((tuple(nextState), action, cost)) 
-        self._expanded += 1 # DO NOT CHANGE
-        return successors
-
-    def getCostOfActions(self, actions):
+    def getCostOfActions(self, actions, initial_state = None):
         """
         Returns the cost of a particular sequence of actions.  If those actions
         include an illegal move, return 999999.  This is implemented for you.
         """
-        if actions == None: return 999999
-        x,y= self.startingPosition
+        if actions is None:
+            return 999999
 
-    
-        for action in actions:
-            dx, dy = Actions.directionToVector(action)
-            x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]: return 999999
-        return len(actions)
+        if initial_state is None:
+            initial_state = self.startingPosition
 
-    
-    def getCostOfActionsBackward(self, actions, initialState):
-        """
-        Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999.  This is implemented for you.
-        """
-        if actions == None: return 999999
-        x,y= initialState
-       
+        x, y = initial_state
         cost = 0
         for action in actions:
             # Check figure out the next state and see whether its' legal
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]: return 999999
-            cost += self.costFn((x,y))
+            if self.walls[x][y]:
+                return 999999
+            cost += self.costFn((x, y))
         return cost
     
 
