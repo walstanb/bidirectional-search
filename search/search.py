@@ -361,6 +361,8 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
 
             inverted_action_sequence_backward.reverse()
 
+            problem.isGoalState(initial_state_backward)
+
             return action_sequence_forward + inverted_action_sequence_backward
 
         # The forward search
@@ -535,7 +537,7 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
                         if g_val_forward + g_val_backward == U:
                             middle_node = child_state
 
-    return None
+    return []
 
 
 # Abbreviations
