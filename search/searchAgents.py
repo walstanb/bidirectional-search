@@ -283,10 +283,7 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 
 class CornersProblem(search.SearchProblem):
-    """
-    This search problem finds paths through all four corners of a layout.
-    You must select a suitable state space and successor function
-    """
+
 
     def __init__(self, startingGameState):
         """

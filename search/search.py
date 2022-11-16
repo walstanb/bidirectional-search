@@ -650,7 +650,6 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
 
         elif (C== min_priority_forward):
 
-
             current_state = open_list_forward.pop()  
             if current_state not in explored_forward_nodes:
                 
@@ -690,56 +689,34 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                 middle_node = child_state
         else:
     
-            parentNodeBackward = open_list_backward.pop()  #Pop the node which highest priority        
+            parentNodeBackward = open_list_backward.pop()  
             if(parentNodeBackward not in backward_explored_nodes):
-                children_nodes=problem.getSuccessors(parentNodeBackward, True) #Get the successor nodes of the node which was just popped
+                children_nodes=problem.getSuccessors(parentNodeBackward, True) 
                 backward_explored_nodes.append(parentNodeBackward)
 
                 for children in children_nodes:
                     child_state, action, step_cost = children
-                    """Verifying if each child node exists in explored states set or in the frontier set"""
+                    
                     if(child_state not in backward_explored_nodes):
 
-                        """We check if the childNode is already present in the childParent Dictionary"""
                         if(child_state not in parent_link_backward.keys()):
 
-                            """Linking the ChildNode with the parentNodeBackward and keeping it in a dictionary"""
                             parent_link_backward[child_state]=(parentNodeBackward, action)
-
-                            """Calling the backtracing function to get the the sequence of actions which are required to go
-                                from initial state to the current childNode state
-                            """
                             seqAction=get_action_sequence(parent_link_backward, initial_state_backward, child_state)
 
-                            #Cost_=problem.getCostOfActionsBackward(seqAction,initial_state_backward[0]) + corners_heuristic(child_state, problem, 'Backward')
                             Cost_=problem.getCostOfActions(seqAction,initial_state_backward[0]) + corners_heuristic(child_state, problem, 'Backward')
-
-                            #priority= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction, initial_state_backward[0]))
                             priority= max(Cost_, 2*problem.getCostOfActions(seqAction, initial_state_backward[0]))
-                            
-                            """Adding the childNode state to the frontier list along with the Cost_ to reach the ChildNode"""
                             open_list_backward.push(child_state, priority)
 
 
                         else:
-                            """ If the childNode is already present, we update the child:Parent link only if the current cost is lesser than the past cost"""
-
-                            """Getting the past cost"""
-                            #Past_Cost=problem.getCostOfActionsBackward(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
                             Past_Cost=problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
-                            """Getting the current cost"""
-                            # Cost_=problem.getCostOfActionsBackward(get_action_sequence(parent_link_backward, initial_state_backward, parentNodeBackward), initial_state_backward[0])+children[2]
                             Cost_=problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, parentNodeBackward), initial_state_backward[0])+children[2]
-                            """Adding the heuristic cost"""
                             Cost_= Cost_ + corners_heuristic(child_state, problem, 'Backward')
 
                             if(Past_Cost > Cost_):
-                                """Adding the childNode to the frontier list"""
                                 open_list_backward.push(child_state,Cost_)
-                                """Updating the Child:Parent link in the parent_link_backward linkup"""
                                 parent_link_backward[child_state]=(parentNodeBackward, action)
-
-                                #priority= max(Cost_, 2*problem.getCostOfActionsBackward(seqAction), initial_state_backward[0])
                                 priority= max(Cost_, 2*problem.getCostOfActions(seqAction), initial_state_backward[0])
 
                                 open_list_backward.push(child_state, priority)
@@ -748,11 +725,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                         if(child_state in explored_forward_nodes):
                             
                             costofStartStatetoNode = problem.getCostOfActions(get_action_sequence(parent_link_forward, initial_state_forward, child_state))
-                            #costofGoalStatetoNode  = problem.getCostOfActionsBackward(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
                             costofGoalStatetoNode  = problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
                             
-                            # Update U 
-
                             U = min(U, costofStartStatetoNode+costofGoalStatetoNode)
                             if((costofStartStatetoNode+costofGoalStatetoNode)==U):
                                 middle_node = child_state
