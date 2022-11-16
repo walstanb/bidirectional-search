@@ -307,16 +307,16 @@ class CornersProblem(search.SearchProblem):
         self.intialState=[]
         self.intialState.append(self.startingPosition)
         for corner in self.corners:
-            self.intialState.append((corner, True))
+            self.intialState.append((corner, True)) # if corner, mark start state as True
         return tuple(self.intialState)
 
     def isGoalState(self, state):
 
         for iters in range(1,5):
             if(state[iters] == self.goal[iters]):
-                isGoal = True
+                isGoal = True # True only if corner is reached
             else:
-                isGoal = False
+                isGoal = False # False, otherwise
         return isGoal 
     
     def getSuccessors(self, state, boolFlag = False):
@@ -324,11 +324,11 @@ class CornersProblem(search.SearchProblem):
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state[0]
-            dx, dy = Actions.directionToVector(action)
+            dx, dy = Actions.directionToVector(action) # assign position based on the direction of the action
             next_x, next_y = int(x + dx), int(y + dy)
             hitsWall = self.walls[next_x][next_y]
             if not hitsWall:
-                next_agent_position = (next_x, next_y)
+                next_agent_position = (next_x, next_y) # next agent position
                 cost = self.costFn(next_agent_position)
 
                 if next_agent_position not in self.corners:
@@ -343,9 +343,9 @@ class CornersProblem(search.SearchProblem):
                     nextState.append(next_agent_position)
                     for counter in range(1,5):
                         if(counter != cornerIndex+1):
-                            nextState.append(state[counter])
+                            nextState.append(state[counter]) # if not a corner
                         else:
-                            nextState.append((self.corners[cornerIndex], boolFlag))
+                            nextState.append((self.corners[cornerIndex], boolFlag)) # if corner, then append accordingly based on visited
                     successors.append((tuple(nextState), action, cost)) 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -356,7 +356,7 @@ class CornersProblem(search.SearchProblem):
             return float('inf')
 
         if initial_state is None:
-            initial_state = self.startingPosition
+            initial_state = self.startingPosition # if initial state is not defined, use starting position
 
         x, y = initial_state
         cost = 0
@@ -364,7 +364,7 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
             if self.walls[x][y]:
-                return float('inf')
+                return float('inf') # if wall, cost is max.
             cost += self.costFn((x, y))
         return cost
 
