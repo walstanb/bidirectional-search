@@ -299,87 +299,48 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
-        """ Goal State is where there is no food in any of the corner positions """
-        """ The state in the problem has been defined as (AgentPosition, (CornerPositions, Food or No Food))"""
-        """
-           Starting Position has been put into the goal state JUST to keep the state format intact, it is NOT used for 
-           the evaluation of the goal test check
-        """
         self.goal=(self.startingPosition, ((1,1), False), ((1,top),False), ((right,1), False), ((right, top), False))
-        """Defining the Cost Function"""
         self.costFn=lambda x: 1
 
     def getStartState(self):
-        """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
-        """
 
         self.intialState=[]
-        """ Initial State is the tuple of initial agent postion and the position of all corners and if they contain food or not"""
-        """ Example:((4, 5), ((1, 1), True), ((1, 6), True), ((6, 1), True), ((6, 6), True)) """
         self.intialState.append(self.startingPosition)
         for corner in self.corners:
             self.intialState.append((corner, True))
         return tuple(self.intialState)
-        util.raiseNotDefined()
 
     def isGoalState(self, state):
-        """
-        Returns whether this search state is a goal state of the problem.
-        """ 
-        """Goal Test is True only if all the the food has been eaten, which means the value is False for all the corner positions"""
-        """ Example: ((4, 6), ((1, 1), False), ((1, 6), False), ((6, 1), False), ((6, 6), False))"""
-        if(state[1]==self.goal[1] and state[2]==self.goal[2] and state[3]==self.goal[3] and state[4]==self.goal[4]):
-            isGoal=True
 
-        else:   
-            isGoal=False
-
+        for iters in range(1,5):
+            if(state[iters] == self.goal[iters]):
+                isGoal = True
+            else:
+                isGoal = False
         return isGoal 
     
     def getSuccessors(self, state, boolFlag = False):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
-        """
 
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
             x,y = state[0]
             dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitsWall = self.walls[nextx][nexty]
-            if not self.walls[nextx][nexty]:
-                """We first compute the next position of the agent/pacman"""
-                nextAgentPosition = (nextx, nexty)
-                """Then we calculate the cost of the action"""
-                cost = self.costFn(nextAgentPosition)
-                """ If the next position of the agent is not one of the corner positions,
-                    then the nextStates is the just the new agentposition and the old states of the corner positions
-                """
-                if nextAgentPosition not in self.corners:
+            next_x, next_y = int(x + dx), int(y + dy)
+            hitsWall = self.walls[next_x][next_y]
+            if not hitsWall:
+                next_agent_position = (next_x, next_y)
+                cost = self.costFn(next_agent_position)
+
+                if next_agent_position not in self.corners:
                     nextState=[]
-                    nextState.append(nextAgentPosition)
+                    nextState.append(next_agent_position)
                     for counter in range(1,5):
                         nextState.append(state[counter])
                     successors.append((tuple(nextState), action, cost))
-                
-                    """ 
-                        If the next position of the agent is one of the corner positions,
-                        then the next states is the new position of the agent AND the Updated Status of the corner positions(i.e. if food is there it is eaten)
-                    """ 
                 else:
-                    cornerIndex=self.corners.index(nextAgentPosition)
+                    cornerIndex=self.corners.index(next_agent_position)
                     nextState=[]
-                    nextState.append(nextAgentPosition)
+                    nextState.append(next_agent_position)
                     for counter in range(1,5):
                         if(counter != cornerIndex+1):
                             nextState.append(state[counter])
@@ -390,12 +351,9 @@ class CornersProblem(search.SearchProblem):
         return successors
 
     def getCostOfActions(self, actions, initial_state = None):
-        """
-        Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999.  This is implemented for you.
-        """
+
         if actions is None:
-            return 999999
+            return float('inf')
 
         if initial_state is None:
             initial_state = self.startingPosition
@@ -403,11 +361,10 @@ class CornersProblem(search.SearchProblem):
         x, y = initial_state
         cost = 0
         for action in actions:
-            # Check figure out the next state and see whether its' legal
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
             if self.walls[x][y]:
-                return 999999
+                return float('inf')
             cost += self.costFn((x, y))
         return cost
 

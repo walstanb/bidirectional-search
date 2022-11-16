@@ -601,7 +601,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
     parent_link_backward={}            
                                                             
     explored_forward_nodes = []                              
-    backward_explored_nodes = []                             
+    explored_nodes_backward = []                             
     
     initial_state_forward = problem.getStartState()
     initial_pacman_position= initial_state_forward[0] 
@@ -679,7 +679,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                 priority= max(new_g_val+h_val, 2*new_g_val)    
                                 open_list_forward.push(child_state, priority)
 
-                        if(child_state in backward_explored_nodes):
+                        if(child_state in explored_nodes_backward):
                             action_sequence_start_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
                             action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
                             g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
@@ -689,46 +689,44 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                                 middle_node = child_state
         else:
     
-            parentNodeBackward = open_list_backward.pop()  
-            if(parentNodeBackward not in backward_explored_nodes):
-                children_nodes=problem.getSuccessors(parentNodeBackward, True) 
-                backward_explored_nodes.append(parentNodeBackward)
+            current_state = open_list_backward.pop()  
+            if current_state not in explored_nodes_backward :
+                children_nodes=problem.getSuccessors(current_state, True) 
+                explored_nodes_backward.append(current_state)
 
                 for children in children_nodes:
                     child_state, action, step_cost = children
-                    
-                    if(child_state not in backward_explored_nodes):
+                    if child_state not in explored_nodes_backward :
+                        if child_state not in parent_link_backward.keys():
 
-                        if(child_state not in parent_link_backward.keys()):
-
-                            parent_link_backward[child_state]=(parentNodeBackward, action)
-                            seqAction=get_action_sequence(parent_link_backward, initial_state_backward, child_state)
-
-                            Cost_=problem.getCostOfActions(seqAction,initial_state_backward[0]) + corners_heuristic(child_state, problem, 'Backward')
-                            priority= max(Cost_, 2*problem.getCostOfActions(seqAction, initial_state_backward[0]))
+                            parent_link_backward[child_state] = (current_state, action)
+                            action_sequence_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            g_val = problem.getCostOfActions(action_sequence_to_child,initial_state_backward[0])
+                            h_val = corners_heuristic(child_state, problem, 'Backward')
+                            priority= max(g_val + h_val, 2 * g_val)
                             open_list_backward.push(child_state, priority)
 
-
                         else:
-                            Past_Cost=problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
-                            Cost_=problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, parentNodeBackward), initial_state_backward[0])+children[2]
-                            Cost_= Cost_ + corners_heuristic(child_state, problem, 'Backward')
-
-                            if(Past_Cost > Cost_):
-                                open_list_backward.push(child_state,Cost_)
-                                parent_link_backward[child_state]=(parentNodeBackward, action)
-                                priority= max(Cost_, 2*problem.getCostOfActions(seqAction), initial_state_backward[0])
-
+                            action_sequence_start_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, current_state)
+                            
+                            old_g_val = problem.getCostOfActions(action_sequence_to_child, initial_state_backward[0])                          
+                            new_g_val = problem.getCostOfActions(action_sequence_to_current, initial_state_backward[0]) + children[2]
+                            h_val = corners_heuristic(child_state, problem, 'Backward')
+                            if(old_g_val > new_g_val + h_val):
+                                open_list_forward.push(child_state,new_g_val+h_val)
+                                parent_link_backward[child_state]=(current_state, action)
+                                priority= max(new_g_val+h_val, 2*new_g_val)    
                                 open_list_backward.push(child_state, priority)
 
-                    
                         if(child_state in explored_forward_nodes):
-                            
-                            costofStartStatetoNode = problem.getCostOfActions(get_action_sequence(parent_link_forward, initial_state_forward, child_state))
-                            costofGoalStatetoNode  = problem.getCostOfActions(get_action_sequence(parent_link_backward, initial_state_backward, child_state), initial_state_backward[0])
-                            
-                            U = min(U, costofStartStatetoNode+costofGoalStatetoNode)
-                            if((costofStartStatetoNode+costofGoalStatetoNode)==U):
+
+                            action_sequence_start_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
+                            action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
+                            g_val_backward = problem.getCostOfActions(action_sequence_goal_to_child , initial_state_backward[0]) 
+                            U = min(U, g_val_forward + g_val_backward)   
+                            if(g_val_forward + g_val_backward==U):
                                 middle_node = child_state
 
 # Abbreviations
