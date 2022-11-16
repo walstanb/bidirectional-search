@@ -340,10 +340,7 @@ class CornersProblem(search.SearchProblem):
         else:   
             isGoal=False
 
-        return isGoal   
-        util.raiseNotDefined()
-    
-
+        return isGoal 
     
     def getSuccessors(self, state, boolFlag = False):
         """
