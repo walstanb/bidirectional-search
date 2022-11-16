@@ -413,40 +413,6 @@ class CornersProblem(search.SearchProblem):
                 return 999999
             cost += self.costFn((x, y))
         return cost
-    
-
-
-
-# def cornersHeuristic(state, problem):
-#     """
-#     A heuristic for the CornersProblem that you defined.
-#       state:   The current search state
-#                (a data structure you chose in your search problem)
-#       problem: The CornersProblem instance for this layout.
-#     This function should always return a number that is a lower bound on the
-#     shortest path from the state to a goal of the problem; i.e.  it should be
-#     admissible (as well as consistent).
-#     """
-#     corners = problem.corners # These are the corner coordinates
-#     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
-#     "*** YOUR CODE HERE ***"
-#     def manhatten(position, corner):
-#         "The Manhattan distance heuristic for a Corner Search Problem"
-#         xy1 = position
-#         xy2 = corner
-#         return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-    
-#     """ 
-#     Manhattan Distance of individual corners when there is food available at that particular corner 
-#     or else it is zero 
-#     """ 
-#     manhatten_CR1= manhatten(state[0], state[1][0]) * int(state[1][1]) 
-#     manhatten_CR2= manhatten(state[0], state[2][0]) * int(state[2][1])
-#     manhatten_CR3= manhatten(state[0], state[3][0]) * int(state[3][1]) 
-#     manhatten_CR4= manhatten(state[0], state[4][0]) * int(state[4][1])
-#     """Returning the Max of all corner manhatten distances"""
-#     return max(manhatten_CR1,manhatten_CR2,manhatten_CR3,manhatten_CR4)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

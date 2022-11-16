@@ -560,7 +560,6 @@ def readCommand( argv ):
         import textDisplay
         args['display'] = textDisplay.NullGraphics()
     elif options.textGraphics:
-        print('++++++++')
         import textDisplay
         textDisplay.SLEEP_TIME = options.frameTime
         args['display'] = textDisplay.PacmanGraphics()
