@@ -343,7 +343,9 @@ class CornersProblem(search.SearchProblem):
         return isGoal   
         util.raiseNotDefined()
     
-    def getSuccessorsNew(self, state, boolFlag = False):
+
+    
+    def getSuccessors(self, state, boolFlag = False):
         """
         Returns successor states, the actions they require, and a cost of 1.
          As noted in search.py:

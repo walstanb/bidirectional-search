@@ -54,7 +54,7 @@ class SearchProblem:
         the incremental cost of expanding to that successor.
         """
         util.raiseNotDefined()
-
+    
     def getCostOfActions(self, actions):
         """
          actions: A list of actions to take
@@ -769,7 +769,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                 if(minValue==minPriorityValueinForwardQueue):
                     parentNodeForward = frontierStatesForward.pop()  #Pop the node which highest priority        
                     if(parentNodeForward not in exploredStatesForward):
-                        newFrontierNodes=problem.getSuccessorsNew(parentNodeForward)  #Get the successor nodes of the node which was just popped 
+                        newFrontierNodes=problem.getSuccessors(parentNodeForward)  #Get the successor nodes of the node which was just popped 
                         exploredStatesForward.append(parentNodeForward)
 
                         for childNodes in newFrontierNodes:
@@ -832,7 +832,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
 
                     parentNodeBackward = frontierStatesBackward.pop()  #Pop the node which highest priority        
                     if(parentNodeBackward not in exploredStatesBackward):
-                        newFrontierNodes=problem.getSuccessorsNew(parentNodeBackward, True) #Get the successor nodes of the node which was just popped
+                        newFrontierNodes=problem.getSuccessors(parentNodeBackward, True) #Get the successor nodes of the node which was just popped
                         exploredStatesBackward.append(parentNodeBackward)
 
                         for childNodes in newFrontierNodes:
