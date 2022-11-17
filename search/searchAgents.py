@@ -313,11 +313,9 @@ class CornersProblem(search.SearchProblem):
     def isGoalState(self, state):
 
         for iters in range(1,5):
-            if(state[iters] == self.goal[iters]):
-                isGoal = True # True only if corner is reached
-            else:
-                isGoal = False # False, otherwise
-        return isGoal 
+            if(state[iters] != self.goal[iters]):
+                return False # True only if corner is reached
+        return True 
     
     def getSuccessors(self, state, boolFlag = False):
 
@@ -367,6 +365,14 @@ class CornersProblem(search.SearchProblem):
                 return float('inf') # if wall, cost is max.
             cost += self.costFn((x, y))
         return cost
+
+
+def cornersHeuristic(state, problem):
+    
+    max_val = -1
+    for iters in range(1,5):
+        max_val = max(max_val, (util.manhattanDistance(state[0], state[iters][0]) * int(state[iters][1])) )
+    return max_val 
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
