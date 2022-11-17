@@ -54,7 +54,7 @@ class SearchProblem:
         the incremental cost of expanding to that successor.
         """
         util.raiseNotDefined()
-
+    
     def getCostOfActions(self, actions):
         """
          actions: A list of actions to take
@@ -539,6 +539,260 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
 
     return []
 
+def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
+    
+    '''Formulating Meet in the Middle for Corner Search Problem'''
+
+    def corners_heuristic(state, problem, direction): # calculate corner heuristic
+
+        max_val = -1 
+        if(direction=='Forward'): # if direction is forward
+            for iters in range(1,5):
+                max_val = max(max_val, (util.manhattanDistance(state[0], state[iters][0]) * int(state[iters][1])) ) # calculating manhattan distance and understanding if this is a corner or not
+        else: # if direction is backward
+            for iters in range(1,5):
+                max_val = max(max_val, (util.manhattanDistance(state[0], state[iters][0]) * (not int(state[iters][1]))) ) # calculating manhattan distance and understanding if this is a corner or not
+        return max_val
+
+    def get_action_sequence(parent_child_info, initial_state, goal):
+
+        """
+        Returns the path from the initial_state to the goal using the parent_child_info of each node 
+        :param parent_child_info: the parent information stored for every node
+        :param initial_state: the state to start from
+        :param goal: the state to end at
+        :return:
+        """
+
+        action_sequence = []                                        
+        current_state = goal                               
+
+        # Find the path from the goal state to the initial state using the parent information of each node
+        
+        while(initial_state != current_state):
+            parent_state, action_parent_child = parent_child_info[current_state]
+            action_sequence.append(action_parent_child)
+            current_state = parent_state
+        
+        # Reverse the path from goal to start to get the path from start to goal
+        action_sequence.reverse()
+        return action_sequence
+
+    def get_min_g_f(nodes, initial_state, parent_child_info, problem, search_direction):
+        
+        """
+        Returns the minimum g-value and f-value from the open list, given the initial and the final state
+        :param nodes: the fringe
+        :param initial_state: the initial state of the agent
+        :param parent_child_info: the parent information stored for every node from start to goal
+        :param search_direction: to understand forward or backward search
+        :return:
+        """
+
+        g_values = []
+        f_values = []
+        
+        # For each node in the open list calculate the g_value and the f_value
+        for node in nodes:
+            action_sequence=get_action_sequence(parent_child_info, initial_state, node[2])
+             # g_value is the cost of the path from the initial state to the current state
+            if(search_direction == 'Forward'):
+                g_value= problem.getCostOfActions(action_sequence)
+            else:
+                g_value = problem.getCostOfActions(action_sequence, initial_state[0])
+            # h_value is the estimate of the cheapest path from the current state to the goal state
+            h_value = corners_heuristic(node[2], problem, search_direction)
+            g_values.append(g_value)
+            f_values.append(g_value + h_value)
+        
+        # Return the minimum of all g_values and f_values
+        return min(g_values), min(f_values)
+    
+    def getOppositeAction(current_action):
+        
+        """
+        Returns the opposite direction action given the current direction
+        :param current_action: one of the 4 possible actions: East, West, North, South
+        :return:
+        """
+
+        if current_action == Directions.EAST:
+            return Directions.WEST
+        if current_action == Directions.WEST:
+            return Directions.EAST
+        if current_action == Directions.NORTH:
+            return Directions.SOUTH
+        if current_action == Directions.SOUTH:
+            return Directions.NORTH
+        return None
+    
+    # defining the constants
+    U = float("inf")    
+    threshold = 1         
+
+
+    # fringes are lists which are Priority Queue
+    open_list_forward=util.PriorityQueue()                                                          
+    open_list_backward=util.PriorityQueue() 
+
+    # to hold parent information of each state
+    parent_link_forward={}
+    parent_link_backward={}            
+                                                            
+    explored_forward_nodes = []                              
+    explored_nodes_backward = []                             
+    
+    # The initial state in the forward direction is the start state of the problem
+    initial_state_forward = problem.getStartState()
+    # initial state of our agent
+    initial_pacman_position= initial_state_forward[0] 
+    
+    all_corners=problem.corners                              
+    distance_dict = {}                                  
+    for corners in all_corners: 
+        distance = util.manhattanDistance(corners, initial_pacman_position)
+        distance_dict[distance]=corners
+
+    
+    start_state_backward = distance_dict[max(distance_dict.keys())]  # start state of backward search is the farthest from the initial state
+    initial_state_backward = []
+    initial_state_backward.append((tuple(start_state_backward)))
+
+    for corners in all_corners:
+        if(corners == start_state_backward):
+            initial_state_backward.append((corners, True)) # True, if this corner is start state
+        else:
+            initial_state_backward.append((corners, False)) # False, otherwise
+    
+    initial_state_backward=tuple(initial_state_backward)  # The initial state of the backward search
+
+    open_list_forward.push(initial_state_forward,corners_heuristic(initial_state_forward, problem, 'Forward'))     # appending initial state for forward search 
+    open_list_backward.push(initial_state_backward,corners_heuristic(initial_state_backward, problem, 'Backward')) # appending initial state for backward search 
+    
+    while not (open_list_forward.isEmpty() and open_list_backward.isEmpty()) : # loop until the fringes are empty
+   
+        min_g_val_forward, min_f_val_forward = get_min_g_f(open_list_forward.heap, initial_state_forward, parent_link_forward, problem, 'Forward') # find minimum g and f value in the forward direction
+        min_g_val_backward, min_f_val_backward = get_min_g_f(open_list_backward.heap, initial_state_backward, parent_link_backward, problem, 'Backward') # find minimum g and f value in the backward direction
+        
+        min_priority_forward = heapq.nsmallest(1,open_list_forward.heap)[0][0] # get minimum priority value forward
+        min_priority_backward = heapq.nsmallest(1, open_list_backward.heap)[0][0] # get minimum priority value backward
+        C = min(min_priority_forward, min_priority_backward)
+
+        if(U <= max(C, min_f_val_forward, min_f_val_backward, min_g_val_forward + min_g_val_backward + threshold)):  # The terminating condition: Meet in the middle!
+
+            # Get the action sequence from the start to goal through the middle node
+            # Path(start, goal) = Path(start, middle) + Opposite(Path(goal, middle))
+
+            action_sequence_forward=get_action_sequence(parent_link_forward, initial_state_forward, middle_node)
+            action_sequence_backward=get_action_sequence(parent_link_backward, initial_state_backward, middle_node)
+            inverted_action_sequence_backward = []
+            for action in action_sequence_backward:
+                reverse_action = getOppositeAction(action)
+                inverted_action_sequence_backward.append(reverse_action)
+            inverted_action_sequence_backward.reverse()
+            return action_sequence_forward + inverted_action_sequence_backward
+
+        # The forward search
+
+        elif (C== min_priority_forward):
+            
+            # Get the minimum priority state from the open list
+            current_state = open_list_forward.pop()  
+            # Perform actions on the state only if it has not been explored already
+            if current_state not in explored_forward_nodes:
+                
+                # Get the children states of the current states
+                children_nodes = problem.getSuccessors(current_state)  
+                # Mark the current_state as explored to avoid infinite loops
+                explored_forward_nodes.append(current_state)
+                for children in children_nodes:
+
+                    child_state, action, step_cost = children
+                    # If the child state has not already been explored, perform the following actions
+                    if(child_state not in explored_forward_nodes):
+                        
+                        # If the child node has already been seen through some of its other parent
+                        # compare its already seen path, and the current path, and keep the cheaper one in the open list
+
+                        if child_state not in parent_link_forward.keys():
+                            parent_link_forward[child_state] = (current_state, action)
+                            action_sequence_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
+                            g_val = problem.getCostOfActions(action_sequence_to_child, initial_pacman_position)
+                            h_val = corners_heuristic(child_state, problem, 'Forward')
+                            priority = max(g_val + h_val, 2*g_val)
+                            open_list_forward.push(child_state, priority)
+
+                        else:
+                             # If the child node is seen for the first time, push it to the open list
+                            action_sequence_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
+                            action_sequence_to_current = get_action_sequence(parent_link_forward, initial_state_forward, current_state)
+                            old_g_val = problem.getCostOfActions(action_sequence_to_child)                          
+                            new_g_val = problem.getCostOfActions(action_sequence_to_current)+children[2]
+                            h_val = corners_heuristic(child_state, problem, 'Forward')
+                            if(old_g_val > new_g_val + h_val):
+                                open_list_forward.push(child_state,new_g_val+h_val)
+                                parent_link_forward[child_state]=(current_state, action)
+                                priority= max(new_g_val+h_val, 2*new_g_val)    
+                                open_list_forward.push(child_state, priority)
+                        
+                        # If the child state has already been explored in the backward algorithm, it is a potential
+                        # candidate to be the middle node
+                        if(child_state in explored_nodes_backward):
+                            action_sequence_start_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
+                            action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
+                            g_val_backward = problem.getCostOfActions(action_sequence_goal_to_child , initial_state_backward[0])
+                            U = min(U, g_val_forward + g_val_backward)
+                            if(g_val_forward + g_val_backward==U):
+                                middle_node = child_state
+        # The backward search
+        else:
+            # Get the minimum priority state from the open list
+            current_state = open_list_backward.pop()  
+            # Perform actions on the state only if it has not been explored already
+            if current_state not in explored_nodes_backward :
+                children_nodes=problem.getSuccessors(current_state, True) 
+                explored_nodes_backward.append(current_state)
+
+                for children in children_nodes:
+                    child_state, action, step_cost = children
+                    # Verify if the child node exists in the explored nodes
+                    if child_state not in explored_nodes_backward :
+                        if child_state not in parent_link_backward.keys():
+
+                            parent_link_backward[child_state] = (current_state, action)
+                            # Get sequence of actions to go from initial state to child node 
+                            action_sequence_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            g_val = problem.getCostOfActions(action_sequence_to_child,initial_state_backward[0])
+                            h_val = corners_heuristic(child_state, problem, 'Backward')
+                            priority= max(g_val + h_val, 2 * g_val)
+                            open_list_backward.push(child_state, priority)
+
+                        else:
+                            # If the child node is seen for the first time, push it to the open list
+                            action_sequence_start_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, current_state)
+                            
+                            old_g_val = problem.getCostOfActions(action_sequence_to_child, initial_state_backward[0])                          
+                            new_g_val = problem.getCostOfActions(action_sequence_to_current, initial_state_backward[0]) + children[2]
+                            h_val = corners_heuristic(child_state, problem, 'Backward')
+                            if(old_g_val > new_g_val + h_val):
+                                open_list_forward.push(child_state,new_g_val+h_val)
+                                parent_link_backward[child_state]=(current_state, action)
+                                priority= max(new_g_val+h_val, 2*new_g_val)    
+                                open_list_backward.push(child_state, priority)
+
+                        # If the child state has already been explored in the forward algorithm, it is a potential
+                        # candidate to be the middle node  
+                        if(child_state in explored_forward_nodes):
+
+                            action_sequence_start_to_child = get_action_sequence(parent_link_forward, initial_state_forward, child_state)
+                            action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
+                            g_val_forward = problem.getCostOfActions(action_sequence_start_to_child)
+                            g_val_backward = problem.getCostOfActions(action_sequence_goal_to_child , initial_state_backward[0]) 
+                            U = min(U, g_val_forward + g_val_backward)   
+                            if(g_val_forward + g_val_backward==U):
+                                middle_node = child_state
 
 # Abbreviations
 bfs = breadthFirstSearch
@@ -546,3 +800,4 @@ dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
 mm = meetInTheMiddle
+mm_corner = meetInMiddleCornerSearch

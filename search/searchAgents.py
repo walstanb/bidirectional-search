@@ -283,11 +283,7 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 
 class CornersProblem(search.SearchProblem):
-    """
-    This search problem finds paths through all four corners of a layout.
 
-    You must select a suitable state space and successor function
-    """
 
     def __init__(self, startingGameState):
         """
@@ -295,139 +291,82 @@ class CornersProblem(search.SearchProblem):
         """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
-
-        top, right = self.walls.height - 2, self.walls.width - 2
-        self.corners = ((1, 1), (1, top), (right, 1), (right, top))
-
+        top, right = self.walls.height-2, self.walls.width-2
+        self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
-                print('Warning: no food in corner ' + str(corner))
-
-        self._expanded = 0  # DO NOT CHANGE; Number of search nodes expanded
+                print ('Warning: no food in corner ' + str(corner))
+        self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
+        self.goal=(self.startingPosition, ((1,1), False), ((1,top),False), ((right,1), False), ((right, top), False))
+        self.costFn=lambda x: 1
 
     def getStartState(self):
-        """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
-        """
-        "*** YOUR CODE HERE ***"
-        cornersVisited = (False, False, False, False)
-        return self.startingPosition, cornersVisited
+
+        self.intialState=[]
+        self.intialState.append(self.startingPosition)
+        for corner in self.corners:
+            self.intialState.append((corner, True)) # if corner, mark start state as True
+        return tuple(self.intialState)
 
     def isGoalState(self, state):
-        """
-        Returns whether this search state is a goal state of the problem.
-        """
-        "*** YOUR CODE HERE ***"
-        position, cornersVisited = state
-        return cornersVisited[0] and cornersVisited[1] and cornersVisited[2] and cornersVisited[3]
 
-    def getSuccessors(self, state):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
-
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
-        """
+        for iters in range(1,5):
+            if(state[iters] == self.goal[iters]):
+                isGoal = True # True only if corner is reached
+            else:
+                isGoal = False # False, otherwise
+        return isGoal 
+    
+    def getSuccessors(self, state, boolFlag = False):
 
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-
-            "*** YOUR CODE HERE ***"
-
-            position, cornersVisited = state
-            x, y = position
-            dx, dy = Actions.directionToVector(action)
-            nextX, nextY = int(x + dx), int(y + dy)
-            hitsWall = self.walls[nextX][nextY]
-
+            x,y = state[0]
+            dx, dy = Actions.directionToVector(action) # assign position based on the direction of the action
+            next_x, next_y = int(x + dx), int(y + dy)
+            hitsWall = self.walls[next_x][next_y]
             if not hitsWall:
-                # Update Next Position
-                nextPosition = nextX, nextY
-                action = action
-                cost = 1
+                next_agent_position = (next_x, next_y) # next agent position
+                cost = self.costFn(next_agent_position)
 
-                # Update whether the next position is a corner
-
-                # Corner: Bottom Left
-                if nextX == self.corners[0][0] and nextY == self.corners[0][1]:
-                    nextCornersVisited = True, cornersVisited[1], cornersVisited[2], cornersVisited[3]
-
-                # Corner: Top Left
-                elif nextX == self.corners[1][0] and nextY == self.corners[1][1]:
-                    nextCornersVisited = cornersVisited[0], True, cornersVisited[2], cornersVisited[3]
-
-                # Corner: Bottom Right
-                elif nextX == self.corners[2][0] and nextY == self.corners[2][1]:
-                    nextCornersVisited = cornersVisited[0], cornersVisited[1], True, cornersVisited[3]
-
-                # Corner: Top Right
-                elif nextX == self.corners[3][0] and nextY == self.corners[3][1]:
-                    nextCornersVisited = cornersVisited[0], cornersVisited[1], cornersVisited[2], True
-
-                # Not a corner
+                if next_agent_position not in self.corners:
+                    nextState=[]
+                    nextState.append(next_agent_position)
+                    for counter in range(1,5):
+                        nextState.append(state[counter])
+                    successors.append((tuple(nextState), action, cost))
                 else:
-                    nextCornersVisited = cornersVisited
-
-                nextState = (nextPosition, nextCornersVisited), action, cost
-                successors.append(nextState)
-
-        self._expanded += 1  # DO NOT CHANGE
+                    cornerIndex=self.corners.index(next_agent_position)
+                    nextState=[]
+                    nextState.append(next_agent_position)
+                    for counter in range(1,5):
+                        if(counter != cornerIndex+1):
+                            nextState.append(state[counter]) # if not a corner
+                        else:
+                            nextState.append((self.corners[cornerIndex], boolFlag)) # if corner, then append accordingly based on visited
+                    successors.append((tuple(nextState), action, cost)) 
+        self._expanded += 1 # DO NOT CHANGE
         return successors
 
-    def getCostOfActions(self, actions):
-        """
-        Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999.  This is implemented for you.
-        """
+    def getCostOfActions(self, actions, initial_state = None):
+
         if actions is None:
-            return 999999
-        x, y = self.startingPosition
+            return float('inf')
+
+        if initial_state is None:
+            initial_state = self.startingPosition # if initial state is not defined, use starting position
+
+        x, y = initial_state
+        cost = 0
         for action in actions:
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
             if self.walls[x][y]:
-                return 999999
-        return len(actions)
-
-
-def cornersHeuristic(state, problem):
-    """
-    A heuristic for the CornersProblem that you defined.
-
-      state:   The current search state
-               (a data structure you chose in your search problem)
-
-      problem: The CornersProblem instance for this layout.
-
-    This function should always return a number that is a lower bound on the
-    shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible (as well as consistent).
-    """
-    corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
-
-    "*** YOUR CODE HERE ***"
-    position, cornersVisited = state
-    x, y = position
-
-    h = 0
-
-    for index in range(4):
-        if not cornersVisited[index]:
-            corner_x, corner_y = corners[index]
-            distance = abs(corner_x - x) + abs(corner_y - y)
-            h = max(h, distance)
-
-    return h
-
+                return float('inf') # if wall, cost is max.
+            cost += self.costFn((x, y))
+        return cost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
