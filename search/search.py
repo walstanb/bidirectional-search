@@ -360,8 +360,9 @@ def meetInTheMiddle(problem, heuristic=nullHeuristic):
                 inverted_action_sequence_backward.append(reverse_action)
 
             inverted_action_sequence_backward.reverse()
-
-            problem.isGoalState(initial_state_backward)
+           
+            # For display purposes only
+            problem.isGoalState(problem.goal)
 
             return action_sequence_forward + inverted_action_sequence_backward
 
@@ -690,6 +691,10 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                 reverse_action = getOppositeAction(action)
                 inverted_action_sequence_backward.append(reverse_action)
             inverted_action_sequence_backward.reverse()
+
+            # For display purposes only
+            problem.isGoalState(problem.goal)
+
             return action_sequence_forward + inverted_action_sequence_backward
 
         # The forward search
