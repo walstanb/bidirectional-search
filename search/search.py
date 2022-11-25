@@ -778,8 +778,8 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
                             action_sequence_start_to_child = get_action_sequence(parent_link_backward, initial_state_backward, child_state)
                             action_sequence_goal_to_child = get_action_sequence(parent_link_backward, initial_state_backward, current_state)
                             
-                            old_g_val = problem.getCostOfActions(action_sequence_to_child, initial_state_backward[0])                          
-                            new_g_val = problem.getCostOfActions(action_sequence_to_current, initial_state_backward[0]) + children[2]
+                            old_g_val = problem.getCostOfActions(action_sequence_start_to_child, initial_state_backward[0])                          
+                            new_g_val = problem.getCostOfActions(action_sequence_goal_to_child, initial_state_backward[0]) + children[2]
                             h_val = corners_heuristic(child_state, problem, 'Backward')
                             if(old_g_val > new_g_val + h_val):
                                 open_list_forward.push(child_state,new_g_val+h_val)
