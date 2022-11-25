@@ -302,6 +302,8 @@ class CornersProblem(search.SearchProblem):
         self.goal=(self.startingPosition, ((1,1), False), ((1,top),False), ((right,1), False), ((right, top), False))
         self.costFn=lambda x: 1
 
+        self._visited, self._visitedlist = {}, []
+
     def getStartState(self):
 
         self.intialState=[]
@@ -315,6 +317,12 @@ class CornersProblem(search.SearchProblem):
         for iters in range(1,5):
             if(state[iters] != self.goal[iters]):
                 return False # True only if corner is reached
+        
+        # For display purposes only
+        import __main__
+        if '_display' in dir(__main__):
+            if 'drawExpandedCells' in dir(__main__._display):  # @UndefinedVariable
+                __main__._display.drawExpandedCells(self._visitedlist)  # @UndefinedVariable
         return True 
     
     def getSuccessors(self, state, boolFlag = False):
@@ -346,6 +354,11 @@ class CornersProblem(search.SearchProblem):
                             nextState.append((self.corners[cornerIndex], boolFlag)) # if corner, then append accordingly based on visited
                     successors.append((tuple(nextState), action, cost)) 
         self._expanded += 1 # DO NOT CHANGE
+
+        if state[0] not in self._visited:
+            self._visited[state[0]] = True
+            self._visitedlist.append(state[0])
+
         return successors
 
     def getCostOfActions(self, actions, initial_state = None):
