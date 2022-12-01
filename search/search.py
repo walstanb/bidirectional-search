@@ -186,7 +186,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     # The fringe contains a state, the g() value, the path to the state
     # The fringe is a priority queue with f() as the priority
     g_start = 0
-    h_start = heuristic(start_state, problem)
+    h_start = heuristic(start_state, problem.goal)
     f_start = g_start + h_start
     fringe.push((start_state, [], g_start), f_start)
 
@@ -201,7 +201,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             closed.append(state)
             for successor in problem.getSuccessors(state):
                 nextState, action, cost = successor
-                fringe.push((nextState, path + [action], g_val + cost), g_val + cost + heuristic(nextState, problem))
+                fringe.push((nextState, path + [action], g_val + cost), g_val + cost + heuristic(nextState, problem.goal))
 
     return []
 
