@@ -553,6 +553,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
         else: # if direction is backward
             for iters in range(1,5):
                 max_val = max(max_val, (util.manhattanDistance(state[0], state[iters][0]) * (not int(state[iters][1]))) ) # calculating manhattan distance and understanding if this is a corner or not
+        # return 0
         return max_val
 
     def get_action_sequence(parent_child_info, initial_state, goal):
@@ -652,6 +653,7 @@ def meetInMiddleCornerSearch(problem, heuristic=nullHeuristic):
     distance_dict = {}                                  
     for corners in all_corners: 
         distance = util.manhattanDistance(corners, initial_pacman_position)
+        # distance = 0
         distance_dict[distance]=corners
 
     
