@@ -1,1 +1,32 @@
-# bidirectional-serach
+Team 25 : The Q-Learners
+Implements : Bidirectional search that is guaranteed to meet in the middle : [link](https://ojs.aaai.org/index.php/AAAI/article/view/10436/10295)
+
+Team Members :
+1. Agneet Chatterjee 
+2. Kavya Sree Bachina 
+3. Walstan Baptista 
+4. Souradip Nath 
+
+We develop both the MM algorithm as well as its non-heuristic variant MM0. We implement it for two problem,
+i) The Position Search - To find the path from the start location to the location of the single food pellet in the pacman maze.
+ii) The Corner Search - To find the path to eat 4 food pellets spread across the 4 corners of the pacman maze.
+
+Instructions to run : 
+
+1) Position Search Problem : 
+
+
+2) Corner Search Problem : 
+
+```python pacman.py -l MAZE_NAME -p SearchAgent -a fn=mm_corner,prob=CornersProblem```
+
+Replace MAZE_NAME with 1 amongst the 6 mazes we have created : 
+
+1. tinyCorners
+2. mediumCorners
+3. bigCorners
+4. customTinyCorners
+5. customMediumCorners
+6. customBigCorners
+
+The above code will run by default with a heuristic. To run MM0, uncomment these two lines : [1](https://github.com/walstanb/bidirectional-search/blob/main/search/search.py#L556) and [2](https://github.com/walstanb/bidirectional-search/blob/main/search/search.py#L656), and run the code again.
