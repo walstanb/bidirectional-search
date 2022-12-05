@@ -7,6 +7,8 @@ Team Members :
 3. Walstan Baptista 
 4. Souradip Nath 
 
+We implement the "Meet in Middle" (MM) algorithm on the Pacman search environemnt defined in “UC Berkeley Pacman AI Projects” developed by the DeNero, J.; Klein, D. Available: [link](http://ai.berkeley.edu/project_overview.html.)
+
 We develop both the MM algorithm as well as its non-heuristic variant MM0. We implement it for two problem,
 
 * The Position Search - To find the path from the start location to the location of the single food pellet in the pacman maze.
