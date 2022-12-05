@@ -1,4 +1,4 @@
-Team 25 : The Q-Learners
+## Team 25 : The Q-Learners
 Implements : Bidirectional search that is guaranteed to meet in the middle : [link](https://ojs.aaai.org/index.php/AAAI/article/view/10436/10295)
 
 Team Members :
@@ -13,7 +13,7 @@ ii) The Corner Search - To find the path to eat 4 food pellets spread across the
 
 Instructions to run : 
 
-1) Position Search Problem : 
+## 1) Position Search Problem : 
 
 ```python pacman.py -l MAZE_NAME -p SearchAgent -a fn=mm,heuristic=HEURISTIC_NAME```
 
@@ -27,11 +27,14 @@ Replace MAZE_NAME with 1 amongst the 6 mazes we have created:
 6. openMaze
 
 In order to run MM0: Replace HEURISTIC_NAME with nullHeuristic
+
 In order to run MM with Manhattan Heuristic: Replace HEURISTIC_NAME with manhattanHeuristic
+
 In order to run MM with any other Heuristic: Define the heuristic function in search.py, and replace HEURISTIC_NAME with the function name
 
 
-2) Corner Search Problem : 
+
+## 2) Corner Search Problem : 
 
 ```python pacman.py -l MAZE_NAME -p SearchAgent -a fn=mm_corner,prob=CornersProblem```
 
