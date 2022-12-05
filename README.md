@@ -8,8 +8,9 @@ Team Members :
 4. Souradip Nath 
 
 We develop both the MM algorithm as well as its non-heuristic variant MM0. We implement it for two problem,
-i) The Position Search - To find the path from the start location to the location of the single food pellet in the pacman maze.
-ii) The Corner Search - To find the path to eat 4 food pellets spread across the 4 corners of the pacman maze.
+
+* The Position Search - To find the path from the start location to the location of the single food pellet in the pacman maze.
+* The Corner Search - To find the path to eat 4 food pellets spread across the 4 corners of the pacman maze.
 
 Instructions to run : 
 
