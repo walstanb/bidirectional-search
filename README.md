@@ -26,11 +26,11 @@ Replace MAZE_NAME with 1 amongst the 6 mazes we have created:
 5. customMaze
 6. openMaze
 
-In order to run MM0: Replace HEURISTIC_NAME with nullHeuristic
+**In order to run MM0:** Replace HEURISTIC_NAME with nullHeuristic
 
-In order to run MM with Manhattan Heuristic: Replace HEURISTIC_NAME with manhattanHeuristic
+**In order to run MM with Manhattan Heuristic:** Replace HEURISTIC_NAME with manhattanHeuristic
 
-In order to run MM with any other Heuristic: Define the heuristic function in search.py, and replace HEURISTIC_NAME with the function name
+**In order to run MM with any other Heuristic:** Define the heuristic function in [search.py](https://github.com/walstanb/bidirectional-search/blob/main/search/search.py), and replace HEURISTIC_NAME with the function name
 
 
 
