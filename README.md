@@ -15,6 +15,21 @@ Instructions to run :
 
 1) Position Search Problem : 
 
+```python pacman.py -l MAZE_NAME -p SearchAgent -a fn=mm,heuristic=HEURISTIC_NAME```
+
+Replace MAZE_NAME with 1 amongst the 6 mazes we have created:
+
+1. tinyMaze
+2. smallMaze
+3. mediumMaze
+4. contoursMaze
+5. customMaze
+6. openMaze
+
+In order to run MM0: Replace HEURISTIC_NAME with nullHeuristic
+In order to run MM with Manhattan Heuristic: Replace HEURISTIC_NAME with manhattanHeuristic
+In order to run MM with any other Heuristic: Define the heuristic function in search.py, and replace HEURISTIC_NAME with the function name
+
 
 2) Corner Search Problem : 
 
