@@ -16,7 +16,9 @@ We develop both the MM algorithm as well as its non-heuristic variant MM0. We im
 
 Instructions to run : 
 
-## 1) Position Search Problem : 
+## 1) Position Search Problem :
+
+Unzip the code repository go the the "search" directory and execute the following commands.
 
 ```python pacman.py -l MAZE_NAME -p SearchAgent -a fn=mm,heuristic=HEURISTIC_NAME```
 
