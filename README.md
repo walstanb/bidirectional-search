@@ -51,3 +51,5 @@ Replace MAZE_NAME with 1 amongst the 6 mazes we have created :
 6. customBigCorners
 
 The above code will run by default with a heuristic. To run MM0, uncomment these two lines : [1](https://github.com/walstanb/bidirectional-search/blob/main/search/search.py#L556) and [2](https://github.com/walstanb/bidirectional-search/blob/main/search/search.py#L656), and run the code again.
+
+Custom layouts were generated using the CustomPacmanLayoutsGenerator.xlsx file.
