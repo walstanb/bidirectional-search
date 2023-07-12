@@ -1,4 +1,7 @@
 ## Team 25 : The Q-Learners
+
+![](demo.gif)
+
 Implements : Bidirectional search that is guaranteed to meet in the middle : [link](https://ojs.aaai.org/index.php/AAAI/article/view/10436/10295)
 
 Team Members :
